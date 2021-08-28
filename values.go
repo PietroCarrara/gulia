@@ -1,8 +1,11 @@
 package gulia
 
-import "fmt"
+import (
+	"fmt"
+	"unsafe"
+)
 
-func fromJulia(v jl_value_t) (jv JuliaValue, err error) {
+func valueFromJulia(v jl_value_t) (jv JuliaValue, err error) {
 	if jl_typeis(v, jl_float64_type) {
 		jv, err = &juliaBaseValue{val: jl_unbox_float64(v)}, nil
 	} else {
@@ -11,6 +14,22 @@ func fromJulia(v jl_value_t) (jv JuliaValue, err error) {
 
 	jv.setBase(v)
 	return
+}
+
+func valueFromGo(v interface{}) (jl_value_t, func(), error) {
+	switch t := v.(type) {
+	case *juliaBaseValue:
+		return t.base, nil, nil
+	case *juliaUnknownValue:
+		return t.base, nil, nil
+	case float64:
+		return jl_box_float64(t), nil, nil
+	case string:
+		ptr := cstring(t)
+		return jl_cstr_to_string(ptr), func() { free(unsafe.Pointer(ptr)) }, nil
+	default:
+		return nil, nil, fmt.Errorf(`could not box for object "%v"`, t)
+	}
 }
 
 type JuliaValue interface {

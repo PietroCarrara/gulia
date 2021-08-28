@@ -10,11 +10,12 @@ func main() {
 	gulia.Open()
 	defer gulia.Close()
 
-	val, _ := gulia.EvalString(`
-f(x) = sin(x) + x^2
+	plot, _ := gulia.EvalString(`
+using Plots
 
-f(12.34)
+plot(sin, 0:10)
 	`)
 
-	fmt.Println(val.GetValue())
+	savefig, _ := gulia.GetFunction("savefig")
+	fmt.Println(savefig.Call(plot, "plot.png"))
 }

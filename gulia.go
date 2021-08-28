@@ -21,5 +21,9 @@ func EvalString(str string) (JuliaValue, error) {
 		return nil, errors.New(jl_typeof_str(exc))
 	}
 
-	return fromJulia(res)
+	return valueFromJulia(res)
+}
+
+func GetFunction(name string) (JuliaFunction, error) {
+	return functionFromJulia(jl_get_function(jl_main_module, name))
 }
