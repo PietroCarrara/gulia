@@ -9,6 +9,10 @@ jl_value_t *typeOf(jl_value_t *t) {
   return jl_typeof(t);
 }
 
+char* _string_data(jl_value_t *s) {
+	return ((char*)s + sizeof(void*));
+}
+
 int _typeis(jl_value_t* obj, jl_datatype_t* type) {
 	return jl_typeis(obj, type);
 }
@@ -23,6 +27,7 @@ type jl_function_t *C.jl_function_t
 
 var jl_float64_type jl_datatype_t
 var jl_partial_struct_type jl_datatype_t
+var jl_string_type jl_datatype_t
 var jl_main_module jl_module_t
 
 func free(ptr unsafe.Pointer) {
@@ -38,6 +43,7 @@ func jl_init() {
 
 	jl_float64_type = C.jl_float64_type
 	jl_partial_struct_type = C.jl_partial_struct_type
+	jl_string_type = C.jl_string_type
 	jl_main_module = C.jl_main_module
 }
 
@@ -85,4 +91,8 @@ func jl_call(function jl_function_t, values []jl_value_t) jl_value_t {
 
 func jl_cstr_to_string(str *C.char) jl_value_t {
 	return C.jl_cstr_to_string(str)
+}
+
+func jl_string_data(v jl_value_t) string {
+	return C.GoString(C._string_data(v))
 }

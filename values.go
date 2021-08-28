@@ -8,6 +8,8 @@ import (
 func valueFromJulia(v jl_value_t) (jv JuliaValue, err error) {
 	if jl_typeis(v, jl_float64_type) {
 		jv, err = &juliaBaseValue{val: jl_unbox_float64(v)}, nil
+	} else if jl_typeis(v, jl_string_type) {
+		jv, err = &juliaBaseValue{val: jl_string_data(v)}, nil
 	} else {
 		jv, err = &juliaUnknownValue{}, nil
 	}
