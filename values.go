@@ -51,7 +51,11 @@ type juliaUnknownValue struct {
 }
 
 func (j *juliaBaseValue) GetType() string {
-	return jl_typeof_str(j.base)
+	var t string
+	do(func(){
+		t = jl_typeof_str(j.base)
+	})
+	return t
 }
 
 func (j *juliaBaseValue) GetValue() (interface{}, error) {

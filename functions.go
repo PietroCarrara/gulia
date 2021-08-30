@@ -13,24 +13,32 @@ type baseJuliaFunction struct {
 }
 
 func (j *baseJuliaFunction) Call(args ...interface{}) (JuliaValue, error) {
-	boxes := make([]jl_value_t, 0, len(args))
-	frees := make([]func(), 0, len(args))
-	defer (func() {
-		for _, free := range frees {
-			free()
-		}
-	})()
+	var v JuliaValue
+	var e error
 
-	for _, arg := range args {
-		box, free, err := valueFromGo(arg)
-		if free != nil {
-			frees = append(frees, free)
-		}
-		if err != nil {
-			return nil, err
-		}
-		boxes = append(boxes, box)
-	}
+	do(func() {
+		boxes := make([]jl_value_t, 0, len(args))
+		frees := make([]func(), 0, len(args))
+		defer (func() {
+			for _, free := range frees {
+				free()
+			}
+		})()
 
-	return valueFromJulia(jl_call(j.base, boxes))
+		for _, arg := range args {
+			box, free, err := valueFromGo(arg)
+			if free != nil {
+				frees = append(frees, free)
+			}
+			if err != nil {
+				v, e = nil, err
+				return
+			}
+			boxes = append(boxes, box)
+		}
+
+		v, e = valueFromJulia(jl_call(j.base, boxes))
+	})
+
+	return v, e
 }
